@@ -7,4 +7,18 @@ obj/
 *.suo
 *.cache
 
-# IDE file
+# IDE files
+.vs/
+.vscode/
+
+# Data files (optional - you might want to include sample data)
+expenses.json
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db

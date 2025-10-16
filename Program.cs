@@ -5,10 +5,13 @@ namespace MyExpenseTracker
 {
     public class Expense
     {
+        public int Id { get; set; }
         public decimal Amount { get; set; }
-        public string Description { get; set; }
-        public string Category { get; set; }
+        public string Description { get; set; } = string.Empty;
+        public string Category { get; set; } = string.Empty;
         public DateTime Date { get; set; }
+
+        public Expense() { } // Default constructor for JSON deserialization
 
         public Expense(decimal amount, string description, string category)
         {
@@ -20,17 +23,18 @@ namespace MyExpenseTracker
 
         public override string ToString()
         {
-            return $"{Date:MM/dd/yyyy HH:mm:ss} - {Category} - ${Amount:F2} - {Description}";
+            return $"{Date:MM/dd/yyyy} - {Category} - ${Amount:F2} - {Description}";
         }
     }
 
     class Program
     {
-        private static List<Expense> expenses = new List<Expense>();
+        private static IExpenseRepository expenseRepository = new JsonExpenseRepository();
 
         static void Main(string[] args)
         {
             Console.WriteLine("Welcome to My Expense Tracker!");
+            Console.WriteLine("Data will be saved to expenses.json");
             
             bool running = true;
             while (running)
@@ -54,7 +58,7 @@ namespace MyExpenseTracker
                         Console.WriteLine("Thank you for using My Expense Tracker!");
                         break;
                     default:
-                        Console.WriteLine("Invalid choice. Yes please try again.");
+                        Console.WriteLine("Invalid choice. Please try again.");
                         break;
                 }
             }
@@ -86,15 +90,15 @@ namespace MyExpenseTracker
 
             // Get description
             Console.Write("Enter description: ");
-            string description = Console.ReadLine();
+            string description = Console.ReadLine() ?? string.Empty;
 
             // Get category
             Console.Write("Enter category: ");
-            string category = Console.ReadLine();
+            string category = Console.ReadLine() ?? string.Empty;
 
             // Create and add expense
             Expense expense = new Expense(amount, description, category);
-            expenses.Add(expense);
+            expenseRepository.AddExpense(expense);
 
             Console.WriteLine($"\nExpense added successfully! ${amount:F2} for {description}");
         }
@@ -102,6 +106,8 @@ namespace MyExpenseTracker
         static void ViewAllExpenses()
         {
             Console.WriteLine("\n--- All Expenses ---");
+            
+            var expenses = expenseRepository.GetAllExpenses();
             
             if (expenses.Count == 0)
             {
@@ -117,20 +123,18 @@ namespace MyExpenseTracker
 
         static void ShowTotalSpending()
         {
-            if (expenses.Count == 0)
+            var expenseCount = expenseRepository.GetExpenseCount();
+            
+            if (expenseCount == 0)
             {
                 Console.WriteLine("\nNo expenses recorded yet. Total: $0.00");
                 return;
             }
 
-            decimal total = 0;
-            foreach (var expense in expenses)
-            {
-                total += expense.Amount;
-            }
+            var total = expenseRepository.GetTotalSpending();
 
             Console.WriteLine($"\nTotal Spending: ${total:F2}");
-            Console.WriteLine($"Number of expenses: {expenses.Count}");
+            Console.WriteLine($"Number of expenses: {expenseCount}");
         }
     }
 }
